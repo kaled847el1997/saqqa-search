@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saqqa Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0A0F1E;
+            --card-bg: #121829;
+            --accent-gold: #FFC107;
+            --text-white: #FFFFFF;
+            --text-muted: #A0A0A0;
+            --input-bg: #1A2136;
+            --tag-green: #2ed573;
+            --tag-blue: #1e90ff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-dark); color: var(--text-white); font-family: 'Cairo', sans-serif; }
+        
+        /* Navbar */
+        header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px 5%; background: rgba(10, 15, 30, 0.95); 
+            backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; 
+            border-bottom: 1px solid #1f2937; 
+        }
+        .brand { 
+            display: flex; align-items: center; gap: 12px; 
+            font-family: 'Montserrat', sans-serif; font-size: 22px; 
+            font-weight: 800; color: white; text-decoration: none; 
+            letter-spacing: -0.5px;
+        }
+        .logo-icon { background-color: var(--accent-gold); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; }
+
+        .nav-btns { display: flex; gap: 15px; align-items: center; }
+        .login-btn { background: var(--accent-gold); color: black; padding: 8px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 14px; }
+
+        /* Hero Section */
+        .hero { text-align: center; padding: 80px 5% 50px; background: radial-gradient(circle at top, #161e35 0%, var(--bg-dark) 85%); }
+        .hero h1 { font-family: 'Montserrat', 'Cairo', sans-serif; font-size: clamp(30px, 6vw, 55px); margin-bottom: 20px; line-height: 1.1; }
+        .hero h1 span { color: var(--accent-gold); }
+        .hero p { color: var(--text-muted); max-width: 650px; margin: 0 auto 35px; font-size: 18px; }
+
+        /* Search Box */
+        .search-box { max-width: 750px; margin: 0 auto; position: relative; }
+        .search-input { width: 100%; padding: 22px 35px; border-radius: 50px; border: 2px solid #2a334d; background: var(--input-bg); color: white; font-size: 17px; outline: none; transition: 0.3s; }
+        .search-input:focus { border-color: var(--accent-gold); box-shadow: 0 0 20px rgba(255,193,7,0.1); }
+        .search-trigger { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: var(--accent-gold); border: none; padding: 12px 30px; border-radius: 40px; cursor: pointer; font-weight: bold; }
+
+        /* Sections Grid */
+        .container { padding: 40px 5%; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-right: 5px solid var(--accent-gold); padding-right: 15px; }
+        .section-title { font-size: 26px; font-weight: 700; }
+        
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-bottom: 70px; }
+        .card { background: var(--card-bg); border-radius: 24px; padding: 20px; border: 1px solid #1f2937; position: relative; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .card:hover { transform: translateY(-12px); border-color: var(--accent-gold); }
+        
+        /* Dynamic Badges */
+        .badge { position: absolute; top: 15px; left: 15px; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 10px; text-transform: uppercase; }
+        .badge-cheap { background: var(--tag-green); color: #000; }
+        .badge-trend { background: var(--tag-blue); color: #fff; }
+        .badge-new { background: var(--accent-gold); color: #000; }
+
+        .product-info h3 { margin-top: 25px; font-size: 18px; margin-bottom: 10px; }
+        .price-tag { display: flex; align-items: baseline; gap: 10px; margin: 15px 0; }
+        .current-price { font-size: 24px; font-weight: 800; color: var(--accent-gold); }
+        .old-price { text-decoration: line-through; color: var(--text-muted); font-size: 14px; }
+        
+        .action-btn { width: 100%; padding: 14px; background: var(--accent-gold); border: none; border-radius: 15px; font-weight: 800; cursor: pointer; transition: 0.3s; color: black; }
+        .action-btn:hover { letter-spacing: 1px; }
+
+        /* Admin Overlay (Hidden by default) */
+        #adminPanel { display: none; background: rgba(0,0,0,0.9); position: fixed; inset: 0; z-index: 9999; padding: 50px; }
+
+        footer { text-align: center; padding: 80px; border-top: 1px solid #1f2937; color: var(--text-muted); font-size: 14px; }
+        .designer { color: var(--accent-gold); font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="brand">
+            <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+            Saqqa Search
+        </a>
+        <div class="nav-btns">
+            <a href="#" class="login-btn" onclick="handleLogin()"><i class="fa-solid fa-user"></i> تسجيل الدخول</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Find the Best Price <br><span>Anywhere, Anytime.</span></h1>
+            <p>محرك بحث ذكي يحلل آلاف المتاجر ليمنحك السعر الأفضل والصفقات الحصرية في عالم التكنولوجيا، الموضة، والخدمات.</p>
+            
+            <div class="search-box">
+                <input type="text" id="mainSearch" class="search-input" placeholder="عن ماذا تبحث اليوم؟ (جوالات، ملابس، طعام حيوانات...)">
+                <button class="search-trigger" onclick="runSearch()">إبحث الآن</button>
+            </div>
+        </section>
+
+        <div class="container">
+            
+            <div class="section-header">
+                <h2 class="section-title">أرخص الأسعار (أعلى جودة)</h2>
+            </div>
+            <div class="product-grid">
+                <div class="card">
+                    <div class="badge badge-cheap">أفضل قيمة</div>
+                    <div class="product-info">
+                        <h3>سماعات بلوتوث عازلة للضوضاء</h3>
+                        <div class="price-tag"><span class="current-price">$29</span><span class="old-price">$55</span></div>
+                        <button class="action-btn">إشترِ الآن</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="badge badge-cheap">توفير كبير</div>
+                    <div class="product-info">
+                        <h3>باور بانك 20,000 mAh</h3>
+                        <div class="price-tag"><span class="current-price">$19</span><span class="old-price">$35</span></div>
+                        <button class="action-btn">إشترِ الآن</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-title">المنتجات الترند (الأكثر طلباً)</h2>
+            </div>
+            <div class="product-grid">
+                <div class="card">
+                    <div class="badge badge-trend">TRENDING</div>
+                    <div class="product-info">
+                        <h3>iPhone 15 Pro Max</h3>
+                        <div class="price-tag"><span class="current-price">$1,099</span></div>
+                        <button class="action-btn">مشاهدة السعر</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-title">عالم الحيوانات الأليفة</h2>
+            </div>
+            <div class="product-grid">
+                <div class="card">
+                    <div class="badge badge-new">حصري</div>
+                    <div class="product-info">
+                        <h3>طعام قطط بريميوم 5kg</h3>
+                        <div class="price-tag"><span class="current-price">$15</span></div>
+                        <button class="action-btn">إضافة للعربة</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Saqqa Search © 2026 | جميع الحقوق محفوظة</p>
+        <p>Created with passion by <span class="designer">Khaled Al-Saqqa from Gaza</span></p>
+    </footer>
+
+    <div id="adminPanel">
+        <h1 style="color:var(--accent-gold)">لوحة تحكم Saqqa Search</h1>
+        <p>مرحباً بك يا خالد (Admin)</p>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="margin-top:20px; padding:10px 20px; cursor:pointer;">إغلاق</button>
+    </div>
+
+    <script>
+        const adminEmail = "kaled847el19974@gmail.com";
+
+        function handleLogin() {
+            let email = prompt("أدخل بريدك الإلكتروني لتسجيل الدخول:");
+            if (email === adminEmail) {
+                alert("أهلاً بك يا خالد. تم الدخول كمسؤول.");
+                document.getElementById('adminPanel').style.display = 'block';
+            } else if (email) {
+                alert("مرحباً بك في Saqqa Search! تم تسجيل دخولك كضيف.");
+            }
+        }
+
+        function runSearch() {
+            const query = document.getElementById('mainSearch').value;
+            if (query) {
+                window.open(`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(query)}`, '_blank');
+            } else {
+                alert("يرجى كتابة ما تبحث عنه أولاً.");
+            }
+        }
+    </script>
+</body>
+</html>
